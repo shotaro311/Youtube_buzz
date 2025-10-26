@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YouTube バズリサーチ
 
-## Getting Started
+Next.js(App Router) + Tailwind CSS を用いたバズ動画リサーチツールです。Cloudflare D1 と Google Apps Script を組み合わせて、伸び率スコアの高い動画を検索・保存するワークフローを提供します。
 
-First, run the development server:
+## セットアップ
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+cp .env.local.example .env.local # 必要に応じて値を設定
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ローカル開発は `pnpm dev` で起動し、[http://localhost:3000](http://localhost:3000) にアクセスします。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 主要コマンド
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| コマンド | 説明 |
+| --- | --- |
+| `pnpm dev` | Next.js 開発サーバーを起動 |
+| `pnpm build && pnpm start` | 本番ビルド→本番モードで起動 |
+| `pnpm lint` | ESLint を実行し、警告を失敗として扱う |
+| `pnpm typecheck` | TypeScript 型チェックのみ実行 |
+| `pnpm test` | Vitest によるユニットテストを実行 |
+| `pnpm test:e2e` | Playwright による E2E テストを実行 |
+| `pnpm cf:dev` | Cloudflare Workers をローカルで起動（`src/server/worker.ts`） |
+| `pnpm d1:migrate` | D1 データベースのマイグレーションを適用 |
+| `pnpm save:dry-run` | GAS 保存処理のダミースクリプト（ネットワーク送信なし） |
 
-## Learn More
+## ディレクトリ構成
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app` — UI ルート / API ルート / Server Actions
+- `src/components` — 再利用可能なクライアントコンポーネント
+- `src/lib` — ユーティリティや共有ロジック
+- `src/server` — Cloudflare Workers などサーバー側モジュール
+- `migrations/` — D1 用 SQL マイグレーション
+- `tests/e2e/` — Playwright シナリオ
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+詳細な開発プロセスやタスク運用はリポジトリ直下の `docs/` フォルダと `AGENTS.md` を参照してください。
