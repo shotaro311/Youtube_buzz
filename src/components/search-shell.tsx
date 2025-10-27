@@ -1,48 +1,91 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import type { SearchRequest, SearchResponseBody, VideoResult } from '@/lib/types';
+import { ResultsGrid } from './results-grid';
+import { SearchForm } from './search-form';
 import { ResultsPlaceholder } from './results-placeholder';
-import { SearchForm, type SearchFormState } from './search-form';
+import { SortSelect } from './sort-select';
+import { sortVideos, type SortKey } from '@/lib/sort';
+
+interface SearchState {
+  status: 'idle' | 'loading' | 'success' | 'error';
+  keyword: string;
+  videos: VideoResult[];
+  error?: string;
+}
+
+const initialState: SearchState = {
+  status: 'idle',
+  keyword: '',
+  videos: [],
+};
 
 export function SearchShell() {
-  const [lastQuery, setLastQuery] = useState<SearchFormState | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState<SearchState>(initialState);
+  const [saved, setSaved] = useState<Set<string>>(new Set());
+  const [sortKey, setSortKey] = useState<SortKey>('growth');
 
-  const handleSubmit = async (form: SearchFormState) => {
-    setIsSubmitting(true);
-    setError(null);
-    setLastQuery(form);
+  const handleSubmit = async (form: SearchRequest) => {
+    setState(prev => ({ ...prev, status: 'loading', keyword: form.keyword, error: undefined }));
+    setSaved(new Set());
+
     try {
       const response = await fetch('/api/search', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(form),
       });
-      if (!response.ok) {
-        throw new Error('検索 API は現在準備中です');
+      const json = (await response.json().catch(() => null)) as SearchResponseBody | { ok: false; message: string } | null;
+
+      if (!response.ok || !json) {
+        throw new Error('検索に失敗しました');
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '検索に失敗しました');
-    } finally {
-      setIsSubmitting(false);
+
+      if (!json.ok) {
+        throw new Error(json.message);
+      }
+
+      setState({ status: 'success', keyword: form.keyword, videos: json.videos });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '検索に失敗しました';
+      setState({ status: 'error', keyword: form.keyword, videos: [], error: message });
     }
   };
+
+  const handleSaved = (videoId: string) => {
+    setSaved(prev => new Set(prev).add(videoId));
+  };
+
+  const sortedVideos = useMemo(() => {
+    if (state.status !== 'success') return [] as VideoResult[];
+    return sortVideos(state.videos, sortKey);
+  }, [state, sortKey]);
 
   return (
     <div className="space-y-6">
       <SearchForm onSubmit={handleSubmit} />
-      {isSubmitting && (
+
+      {state.status === 'loading' && (
         <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-700">
-          集計中です。YouTube API との接続を構築したらリロードせずに結果が反映されます。
+          集計中です。YouTube API 接続とキャッシュが完了すると結果が表示されます。
         </div>
       )}
-      {error && (
+
+      {state.status === 'error' && state.error && (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-          {error}
+          {state.error}
         </div>
       )}
-      <ResultsPlaceholder keyword={lastQuery?.keyword} />
+
+      {state.status === 'idle' && <ResultsPlaceholder />}
+
+      {state.status === 'success' && (
+        <div className="space-y-4">
+          <SortSelect value={sortKey} onChange={next => setSortKey(next)} />
+          <ResultsGrid keyword={state.keyword} videos={sortedVideos} saved={saved} onSaved={handleSaved} />
+        </div>
+      )}
     </div>
   );
 }

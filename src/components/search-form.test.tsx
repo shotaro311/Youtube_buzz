@@ -13,7 +13,12 @@ describe('SearchForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'バズ動画を検索' }));
 
     expect(handleSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ keyword: 'キャンプ ギア', region: 'jp' }),
+      expect.objectContaining({
+        keyword: 'キャンプ ギア',
+        region: 'jp',
+        maxSubscribers: null,
+        maxViews: null,
+      }),
     );
   });
 });

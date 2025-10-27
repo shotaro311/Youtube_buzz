@@ -1,14 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import type { SearchRequest } from '@/lib/types';
 
-export type SearchFormState = {
-  keyword: string;
-  region: 'jp' | 'global';
-  minSubscribers: number;
-  minViews: number;
-  publishedWithin: 'any' | '7' | '30' | '90' | '180';
-};
+type SearchFormState = SearchRequest;
 
 const defaultState: SearchFormState = {
   keyword: '',
@@ -16,9 +11,12 @@ const defaultState: SearchFormState = {
   minSubscribers: 100,
   minViews: 10000,
   publishedWithin: '30',
+  includeShorts: true,
+  maxSubscribers: null,
+  maxViews: null,
 };
 
-export function SearchForm({ onSubmit }: { onSubmit: (state: SearchFormState) => void }) {
+export function SearchForm({ onSubmit }: { onSubmit: (state: SearchRequest) => void }) {
   const [form, setForm] = useState<SearchFormState>(defaultState);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -44,7 +42,7 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchFormState) =>
           placeholder="例: キャンプ ギア"
           value={form.keyword}
           onChange={event => setForm({ ...form, keyword: event.target.value })}
-          className="rounded-xl border border-zinc-300 px-3 py-2 text-base shadow-inner focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
+          className="rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base text-zinc-900 placeholder:text-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
         />
       </div>
 
@@ -59,7 +57,7 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchFormState) =>
           onChange={event =>
             setForm({ ...form, region: event.target.value as SearchFormState['region'] })
           }
-          className="rounded-xl border border-zinc-300 px-3 py-2 text-base focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
+          className="rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base text-zinc-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
         >
           <option value="jp">日本のみ</option>
           <option value="global">全世界</option>
@@ -91,7 +89,7 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchFormState) =>
               onChange={event =>
                 setForm({ ...form, minSubscribers: Number(event.target.value) || 0 })
               }
-              className="rounded-lg border border-zinc-300 px-2 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -104,7 +102,45 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchFormState) =>
               min={0}
               value={form.minViews}
               onChange={event => setForm({ ...form, minViews: Number(event.target.value) || 0 })}
-              className="rounded-lg border border-zinc-300 px-2 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-zinc-700" htmlFor="maxSubscribers">
+              最大チャンネル登録者数
+            </label>
+            <input
+              id="maxSubscribers"
+              type="number"
+              min={0}
+              value={form.maxSubscribers ?? ''}
+              onChange={event =>
+                setForm({
+                  ...form,
+                  maxSubscribers: event.target.value === '' ? null : Number(event.target.value) || 0,
+                })
+              }
+              placeholder="上限なし"
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-zinc-700" htmlFor="maxViews">
+              最大再生数
+            </label>
+            <input
+              id="maxViews"
+              type="number"
+              min={0}
+              value={form.maxViews ?? ''}
+              onChange={event =>
+                setForm({
+                  ...form,
+                  maxViews: event.target.value === '' ? null : Number(event.target.value) || 0,
+                })
+              }
+              placeholder="上限なし"
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -120,7 +156,7 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchFormState) =>
                   publishedWithin: event.target.value as SearchFormState['publishedWithin'],
                 })
               }
-              className="rounded-lg border border-zinc-300 px-2 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
             >
               <option value="any">制限なし</option>
               <option value="7">直近7日</option>
@@ -128,6 +164,18 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchFormState) =>
               <option value="90">直近90日</option>
               <option value="180">直近180日</option>
             </select>
+          </div>
+          <div className="flex items-center gap-3 sm:col-span-3">
+            <input
+              id="includeShorts"
+              type="checkbox"
+              checked={form.includeShorts}
+              onChange={event => setForm({ ...form, includeShorts: event.target.checked })}
+              className="h-4 w-4 rounded border border-sky-200 text-sky-600 focus:ring-sky-500"
+            />
+            <label className="text-sm text-zinc-700" htmlFor="includeShorts">
+              ショート動画を含める
+            </label>
           </div>
         </div>
       )}

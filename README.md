@@ -9,6 +9,8 @@ pnpm install
 cp .env.local.example .env.local # 必要に応じて値を設定
 ```
 
+`.env.local` では `YOUTUBE_API_KEYS` にカンマ区切りで複数の API キーを設定できます（例: `KEY1,KEY2`）。キーはローテーションされ、クォータ超過時に自動で切り替わります。
+
 ローカル開発は `pnpm dev` で起動し、[http://localhost:3000](http://localhost:3000) にアクセスします。
 
 ## 主要コマンド

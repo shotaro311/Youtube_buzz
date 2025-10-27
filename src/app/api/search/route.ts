@@ -1,14 +1,25 @@
 import { NextResponse } from 'next/server';
+import { sanitizeVideoResult } from '@/lib/validators';
+import { fetchVideos } from '@/lib/youtube';
+import { parseSearchRequest } from '@/lib/validators';
+import type { SearchErrorBody, SearchResponseBody } from '@/lib/types';
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => null);
+  try {
+    const body = await request.json();
+    const searchRequest = parseSearchRequest(body);
 
-  return NextResponse.json(
-    {
-      ok: false,
-      message: '検索 API は未実装です。YouTube Data API と D1 キャッシュを接続してください。',
-      received: body,
-    },
-    { status: 501 },
-  );
+    const videos = await fetchVideos(searchRequest);
+    const sanitized = videos.map(sanitizeVideoResult);
+    const filteredVideos = searchRequest.includeShorts
+      ? sanitized
+      : sanitized.filter(video => !video.isShort);
+
+    return NextResponse.json({ ok: true, videos: filteredVideos } satisfies SearchResponseBody);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '検索に失敗しました';
+    const payload: SearchErrorBody = { ok: false, message };
+    const status = message.includes('必須') || message.includes('不正') ? 400 : 500;
+    return NextResponse.json(payload satisfies SearchErrorBody, { status });
+  }
 }
