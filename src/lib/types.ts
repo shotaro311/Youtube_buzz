@@ -56,3 +56,30 @@ export interface SaveRequestBody {
 export type SaveResponseBody =
   | { ok: true }
   | { ok: false; message: string };
+
+export interface SearchHistory {
+  id: number;
+  keyword: string;
+  region: Region;
+  minSubscribers: number;
+  maxSubscribers: number | null;
+  minViews: number;
+  maxViews: number | null;
+  publishedWithin: PublishedWithin;
+  includeShorts: boolean;
+  resultCount: number;
+  searchedAt: string;
+}
+
+export interface SearchHistoryWithResults extends SearchHistory {
+  results: VideoResult[];
+}
+
+export interface SaveHistoryRequest {
+  searchRequest: SearchRequest;
+  videos: VideoResult[];
+}
+
+export type HistoryResponseBody =
+  | { ok: true; history: SearchHistory[] }
+  | { ok: false; message: string };

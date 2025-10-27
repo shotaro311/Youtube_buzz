@@ -17,26 +17,13 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap gap-3 text-sm text-sky-700">
             <span className="rounded-full bg-sky-50 px-3 py-1">伸び率スコアで自動ソート</span>
-            <span className="rounded-full bg-sky-50 px-3 py-1">Cloudflare D1 キャッシュ</span>
+            <span className="rounded-full bg-sky-50 px-3 py-1">検索履歴を自動保存</span>
             <span className="rounded-full bg-sky-50 px-3 py-1">GAS 連携で保存</span>
           </div>
         </header>
 
-        <section className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <div className="space-y-6">
-            <SearchShell />
-          </div>
-          <aside className="space-y-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-zinc-900">開発メモ</h2>
-            <ul className="list-disc space-y-2 pl-5 text-sm text-zinc-600">
-              <li>YouTube Data API v3 の毎時キャッシュは Cloudflare D1 を利用します。</li>
-              <li>保存 API は Google Apps Script エンドポイントに JSON を POST します。</li>
-              <li>詳細な要件は docs/ フォルダのドキュメントを参照してください。</li>
-            </ul>
-            <div className="rounded-2xl bg-zinc-50 p-4 text-xs text-zinc-500">
-              開発フェーズ 1: ローカル動作を優先し、モックレスポンスで UI 挙動を固めたのち API を接続します。
-            </div>
-          </aside>
+        <section>
+          <SearchShell />
         </section>
       </main>
     </div>
