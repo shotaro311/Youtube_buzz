@@ -1,11 +1,18 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { SearchForm } from './search-form';
+import { SearchForm, defaultSearchFormState } from './search-form';
 
 describe('SearchForm', () => {
   it('calls onSubmit with form values', () => {
     const handleSubmit = vi.fn();
-    render(<SearchForm onSubmit={handleSubmit} />);
+
+    function Wrapper() {
+      const [value, setValue] = useState(defaultSearchFormState);
+      return <SearchForm value={value} onChange={setValue} onSubmit={handleSubmit} />;
+    }
+
+    render(<Wrapper />);
 
     fireEvent.change(screen.getByLabelText('検索キーワード'), {
       target: { value: 'キャンプ ギア' },

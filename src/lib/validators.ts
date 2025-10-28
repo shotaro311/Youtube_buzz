@@ -21,10 +21,10 @@ export function parseSearchRequest(input: unknown): SearchRequest {
   if (!keyword) {
     throw new Error('検索キーワードは必須です');
   }
-  if (!REGION_VALUES.includes(region ?? '')) {
+  if (!region || !REGION_VALUES.includes(region)) {
     throw new Error('region の値が不正です');
   }
-  if (!PUBLISHED_WITHIN_VALUES.includes(publishedWithin ?? '')) {
+  if (!publishedWithin || !PUBLISHED_WITHIN_VALUES.includes(publishedWithin)) {
     throw new Error('publishedWithin の値が不正です');
   }
   if (!Number.isFinite(minSubscribers) || minSubscribers < 0) {

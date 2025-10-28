@@ -3,9 +3,7 @@
 import { useState } from 'react';
 import type { SearchRequest } from '@/lib/types';
 
-type SearchFormState = SearchRequest;
-
-const defaultState: SearchFormState = {
+export const defaultSearchFormState: SearchRequest = {
   keyword: '',
   region: 'jp',
   minSubscribers: 100,
@@ -16,19 +14,28 @@ const defaultState: SearchFormState = {
   maxViews: null,
 };
 
-export function SearchForm({ onSubmit }: { onSubmit: (state: SearchRequest) => void }) {
-  const [form, setForm] = useState<SearchFormState>(defaultState);
+interface SearchFormProps {
+  value: SearchRequest;
+  onChange: (next: SearchRequest) => void;
+  onSubmit: (state: SearchRequest) => void;
+}
+
+export function SearchForm({ value, onChange, onSubmit }: SearchFormProps) {
   const [showFilters, setShowFilters] = useState(false);
+
+  const update = (partial: Partial<SearchRequest>) => {
+    onChange({ ...value, ...partial });
+  };
 
   return (
     <form
       className="flex flex-col gap-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm"
       onSubmit={event => {
         event.preventDefault();
-        if (!form.keyword.trim()) {
+        if (!value.keyword.trim()) {
           return;
         }
-        onSubmit(form);
+        onSubmit(value);
       }}
     >
       <div className="flex flex-col gap-2">
@@ -40,8 +47,8 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchRequest) => v
           name="keyword"
           required
           placeholder="例: キャンプ ギア"
-          value={form.keyword}
-          onChange={event => setForm({ ...form, keyword: event.target.value })}
+          value={value.keyword}
+          onChange={event => update({ keyword: event.target.value })}
           className="rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base text-zinc-900 placeholder:text-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
         />
       </div>
@@ -53,10 +60,8 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchRequest) => v
         <select
           id="region"
           name="region"
-          value={form.region}
-          onChange={event =>
-            setForm({ ...form, region: event.target.value as SearchFormState['region'] })
-          }
+          value={value.region}
+          onChange={event => update({ region: event.target.value as SearchRequest['region'] })}
           className="rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base text-zinc-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
         >
           <option value="jp">日本のみ</option>
@@ -85,10 +90,8 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchRequest) => v
               id="minSubscribers"
               type="number"
               min={0}
-              value={form.minSubscribers}
-              onChange={event =>
-                setForm({ ...form, minSubscribers: Number(event.target.value) || 0 })
-              }
+              value={value.minSubscribers}
+              onChange={event => update({ minSubscribers: Number(event.target.value) || 0 })}
               className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
             />
           </div>
@@ -100,8 +103,8 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchRequest) => v
               id="minViews"
               type="number"
               min={0}
-              value={form.minViews}
-              onChange={event => setForm({ ...form, minViews: Number(event.target.value) || 0 })}
+              value={value.minViews}
+              onChange={event => update({ minViews: Number(event.target.value) || 0 })}
               className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
             />
           </div>
@@ -113,11 +116,11 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchRequest) => v
               id="maxSubscribers"
               type="number"
               min={0}
-              value={form.maxSubscribers ?? ''}
+              value={value.maxSubscribers ?? ''}
               onChange={event =>
-                setForm({
-                  ...form,
-                  maxSubscribers: event.target.value === '' ? null : Number(event.target.value) || 0,
+                update({
+                  maxSubscribers:
+                    event.target.value === '' ? null : Number(event.target.value) || 0,
                 })
               }
               placeholder="上限なし"
@@ -132,10 +135,9 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchRequest) => v
               id="maxViews"
               type="number"
               min={0}
-              value={form.maxViews ?? ''}
+              value={value.maxViews ?? ''}
               onChange={event =>
-                setForm({
-                  ...form,
+                update({
                   maxViews: event.target.value === '' ? null : Number(event.target.value) || 0,
                 })
               }
@@ -149,11 +151,10 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchRequest) => v
             </label>
             <select
               id="publishedWithin"
-              value={form.publishedWithin}
+              value={value.publishedWithin}
               onChange={event =>
-                setForm({
-                  ...form,
-                  publishedWithin: event.target.value as SearchFormState['publishedWithin'],
+                update({
+                  publishedWithin: event.target.value as SearchRequest['publishedWithin'],
                 })
               }
               className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
@@ -169,8 +170,8 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchRequest) => v
             <input
               id="includeShorts"
               type="checkbox"
-              checked={form.includeShorts}
-              onChange={event => setForm({ ...form, includeShorts: event.target.checked })}
+              checked={value.includeShorts}
+              onChange={event => update({ includeShorts: event.target.checked })}
               className="h-4 w-4 rounded border border-sky-200 text-sky-600 focus:ring-sky-500"
             />
             <label className="text-sm text-zinc-700" htmlFor="includeShorts">
@@ -184,7 +185,7 @@ export function SearchForm({ onSubmit }: { onSubmit: (state: SearchRequest) => v
         <button
           type="submit"
           className="rounded-full bg-sky-600 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-200 transition hover:bg-sky-500 disabled:bg-zinc-300"
-          disabled={!form.keyword.trim()}
+          disabled={!value.keyword.trim()}
         >
           バズ動画を検索
         </button>

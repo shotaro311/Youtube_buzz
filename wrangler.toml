@@ -1,6 +1,8 @@
 name = "youtube-buzz-research"
 main = "src/server/worker.ts"
 compatibility_date = "2024-10-01"
+account_id = "5a5663c8bdbade2d61933d836795df81"
+workers_dev = true
 
 [vars]
 YOUTUBE_API_KEY = "${YOUTUBE_API_KEY}"
@@ -9,4 +11,4 @@ GAS_ENDPOINT_URL = "${GAS_ENDPOINT_URL}"
 [[d1_databases]]
 binding = "DB"
 database_name = "youtube-buzz-research"
-database_id = "__REPLACE_ME__"
+database_id = "6f37921b-1a49-4a6d-a580-b7fe0daf8870"
