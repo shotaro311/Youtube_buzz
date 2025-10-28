@@ -1,4 +1,4 @@
-import type { Region, SearchRequest, VideoResult } from './types';
+import type { Region, SearchRequest, VideoDuration, VideoResult } from './types';
 import { getPublishedAfterFilter } from './date';
 
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
@@ -122,6 +122,9 @@ async function fetchWithKey(request: SearchRequest, apiKey: string): Promise<Vid
     if (subscribers < request.minSubscribers) continue;
 
     const isShort = durationSeconds !== null && durationSeconds <= 60;
+    if (!matchesDuration(durationSeconds, request.videoDuration)) {
+      continue;
+    }
     if (!request.includeShorts) {
       const tags = video.snippet.tags?.map(tag => tag.toLowerCase()) ?? [];
       const titleLower = video.snippet.title.toLowerCase();
@@ -191,6 +194,9 @@ async function fetchSearchItems(request: SearchRequest, apiKey: string): Promise
     const publishedAfter = getPublishedAfterFilter(request.publishedWithin);
     if (publishedAfter) {
       params.set('publishedAfter', publishedAfter);
+    }
+    if (request.videoDuration !== 'any') {
+      params.set('videoDuration', request.videoDuration);
     }
 
     let response: SearchApiResponse;
@@ -267,6 +273,18 @@ function parseDurationSeconds(duration?: string): number | null {
     (minutes ? Number(minutes) * 60 : 0) +
     (seconds ? Number(seconds) : 0);
   return Number.isFinite(total) ? total : null;
+}
+
+function matchesDuration(durationSeconds: number | null, filter: VideoDuration): boolean {
+  if (filter === 'any') return true;
+  if (durationSeconds === null) return false;
+  if (filter === 'short') {
+    return durationSeconds < 4 * 60;
+  }
+  if (filter === 'medium') {
+    return durationSeconds >= 4 * 60 && durationSeconds <= 20 * 60;
+  }
+  return durationSeconds > 20 * 60;
 }
 
 async function fetchChannelsByIds(channelIds: string[], apiKey: string): Promise<ChannelItem[]> {

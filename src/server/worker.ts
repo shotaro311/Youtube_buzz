@@ -61,8 +61,9 @@ async function handleSaveHistory(
   const historyInsert = await env.DB.prepare(`
     INSERT INTO search_history (
       keyword, region, min_subscribers, max_subscribers,
-      min_views, max_views, published_within, include_shorts, result_count
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      min_views, max_views, published_within, video_duration,
+      include_shorts, result_count
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     searchRequest.keyword,
     searchRequest.region,
@@ -71,6 +72,7 @@ async function handleSaveHistory(
     searchRequest.minViews,
     searchRequest.maxViews ?? null,
     searchRequest.publishedWithin,
+    searchRequest.videoDuration,
     searchRequest.includeShorts ? 1 : 0,
     videos.length
   ).run();
@@ -117,6 +119,7 @@ async function handleGetHistory(
       id, keyword, region, min_subscribers as minSubscribers,
       max_subscribers as maxSubscribers, min_views as minViews,
       max_views as maxViews, published_within as publishedWithin,
+      video_duration as videoDuration,
       include_shorts as includeShorts, result_count as resultCount,
       searched_at as searchedAt
     FROM search_history
@@ -127,6 +130,7 @@ async function handleGetHistory(
   const history = (results ?? []).map(row => ({
     ...row,
     includeShorts: Boolean(row.includeShorts),
+    videoDuration: (row.videoDuration ?? 'any') as SearchRequest['videoDuration'],
   }));
 
   return new Response(JSON.stringify({ ok: true, history }), { headers });

@@ -42,7 +42,13 @@ export function SearchShell() {
     try {
       const raw = window.localStorage.getItem(SAVED_RESULTS_STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as SavedResultSet[];
+        const parsed = (JSON.parse(raw) as SavedResultSet[]).map(item => ({
+          ...item,
+          searchRequest: {
+            ...item.searchRequest,
+            videoDuration: item.searchRequest.videoDuration ?? 'any',
+          },
+        }));
         setSavedResults(parsed);
       }
     } catch (error) {

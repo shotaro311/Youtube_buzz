@@ -47,6 +47,7 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
       minViews: item.minViews,
       maxViews: item.maxViews,
       publishedWithin: item.publishedWithin,
+      videoDuration: item.videoDuration,
       includeShorts: item.includeShorts,
     };
     onReuse(searchRequest);
@@ -108,7 +109,7 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
                   </span>
                 </div>
                 <div className="text-xs text-zinc-500">
-                  {formatDateTimeJst(item.searchedAt)} · {item.resultCount}件
+                  {formatDateTimeJst(item.searchedAt)} · {item.resultCount}件 · {durationLabel(item.videoDuration)}
                 </div>
               </div>
               <button
@@ -123,4 +124,17 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
       </div>
     </div>
   );
+}
+
+function durationLabel(duration: SearchHistory['videoDuration']): string {
+  switch (duration) {
+    case 'short':
+      return 'ショート';
+    case 'medium':
+      return 'ミドル';
+    case 'long':
+      return 'ロング';
+    default:
+      return '長さ指定なし';
+  }
 }

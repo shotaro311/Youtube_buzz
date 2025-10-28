@@ -100,6 +100,7 @@ export function SavedResultsModal({ item, onClose }: SavedResultsModalProps) {
               <li>最大登録者数: {item.searchRequest.maxSubscribers ?? '指定なし'}</li>
               <li>最大再生数: {item.searchRequest.maxViews ?? '指定なし'}</li>
               <li>公開からの日数: {formatPublishedWithin(item.searchRequest.publishedWithin)}</li>
+              <li>動画の長さ: {formatVideoDuration(item.searchRequest.videoDuration)}</li>
               <li>ショート動画を含める: {item.searchRequest.includeShorts ? 'はい' : 'いいえ'}</li>
             </ul>
           </div>
@@ -148,3 +149,15 @@ function formatPublishedWithin(value: SearchRequest['publishedWithin']): string 
   }
 }
 
+function formatVideoDuration(value: SearchRequest['videoDuration']): string {
+  switch (value) {
+    case 'short':
+      return 'ショート (4分未満)';
+    case 'medium':
+      return 'ミドル (4〜20分)';
+    case 'long':
+      return 'ロング (20分以上)';
+    default:
+      return '指定なし';
+  }
+}

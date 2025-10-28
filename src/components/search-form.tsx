@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { SearchRequest } from '@/lib/types';
+import type { SearchRequest, VideoDuration } from '@/lib/types';
 
 export const defaultSearchFormState: SearchRequest = {
   keyword: '',
@@ -9,6 +9,7 @@ export const defaultSearchFormState: SearchRequest = {
   minSubscribers: 100,
   minViews: 10000,
   publishedWithin: '30',
+  videoDuration: 'any',
   includeShorts: true,
   maxSubscribers: null,
   maxViews: null,
@@ -164,6 +165,24 @@ export function SearchForm({ value, onChange, onSubmit }: SearchFormProps) {
               <option value="30">直近30日</option>
               <option value="90">直近90日</option>
               <option value="180">直近180日</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-zinc-700" htmlFor="videoDuration">
+              動画の長さ
+            </label>
+            <select
+              id="videoDuration"
+              value={value.videoDuration}
+              onChange={event =>
+                update({ videoDuration: event.target.value as VideoDuration })
+              }
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+            >
+              <option value="any">指定なし</option>
+              <option value="short">ショート (4分未満)</option>
+              <option value="medium">ミドル (4〜20分)</option>
+              <option value="long">ロング (20分以上)</option>
             </select>
           </div>
           <div className="flex items-center gap-3 sm:col-span-3">

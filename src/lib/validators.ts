@@ -1,7 +1,8 @@
-import type { PublishedWithin, Region, SearchRequest, VideoResult } from './types';
+import type { PublishedWithin, Region, SearchRequest, VideoDuration, VideoResult } from './types';
 
 const REGION_VALUES: Region[] = ['jp', 'global'];
 const PUBLISHED_WITHIN_VALUES: PublishedWithin[] = ['any', '7', '30', '90', '180'];
+const VIDEO_DURATION_VALUES: VideoDuration[] = ['any', 'short', 'medium', 'long'];
 
 export function parseSearchRequest(input: unknown): SearchRequest {
   if (!input || typeof input !== 'object') {
@@ -17,6 +18,7 @@ export function parseSearchRequest(input: unknown): SearchRequest {
   const includeShortsValue = data.includeShorts ?? true;
   const maxSubscribersValue = data.maxSubscribers;
   const maxViewsValue = data.maxViews;
+  const videoDurationValue = (data.videoDuration as VideoDuration | undefined) ?? 'any';
 
   if (!keyword) {
     throw new Error('検索キーワードは必須です');
@@ -26,6 +28,9 @@ export function parseSearchRequest(input: unknown): SearchRequest {
   }
   if (!publishedWithin || !PUBLISHED_WITHIN_VALUES.includes(publishedWithin)) {
     throw new Error('publishedWithin の値が不正です');
+  }
+  if (!VIDEO_DURATION_VALUES.includes(videoDurationValue)) {
+    throw new Error('videoDuration の値が不正です');
   }
   if (!Number.isFinite(minSubscribers) || minSubscribers < 0) {
     throw new Error('minSubscribers の値が不正です');
@@ -55,6 +60,7 @@ export function parseSearchRequest(input: unknown): SearchRequest {
     minSubscribers,
     minViews,
     publishedWithin,
+    videoDuration: videoDurationValue,
     includeShorts,
     maxSubscribers,
     maxViews,

@@ -1,6 +1,7 @@
 export type Region = 'jp' | 'global';
 
 export type PublishedWithin = 'any' | '7' | '30' | '90' | '180';
+export type VideoDuration = 'any' | 'short' | 'medium' | 'long';
 
 export interface SearchRequest {
   keyword: string;
@@ -8,6 +9,7 @@ export interface SearchRequest {
   minSubscribers: number;
   minViews: number;
   publishedWithin: PublishedWithin;
+  videoDuration: VideoDuration;
   includeShorts: boolean;
   maxSubscribers: number | null;
   maxViews: number | null;
@@ -66,6 +68,7 @@ export interface SearchHistory {
   minViews: number;
   maxViews: number | null;
   publishedWithin: PublishedWithin;
+  videoDuration: VideoDuration;
   includeShorts: boolean;
   resultCount: number;
   searchedAt: string;

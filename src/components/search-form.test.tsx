@@ -23,6 +23,7 @@ describe('SearchForm', () => {
       expect.objectContaining({
         keyword: 'キャンプ ギア',
         region: 'jp',
+        videoDuration: 'any',
         maxSubscribers: null,
         maxViews: null,
       }),
