@@ -93,7 +93,9 @@ async function fetchWithKey(request: SearchRequest, apiKey: string): Promise<Vid
     return [];
   }
 
-  const videoIds = Array.from(new Set(searchItems.map(item => item.id.videoId).filter(Boolean)));
+  const videoIds = Array.from(
+    new Set(searchItems.map(item => item.id.videoId).filter((id): id is string => Boolean(id)))
+  );
   if (videoIds.length === 0) {
     return [];
   }
