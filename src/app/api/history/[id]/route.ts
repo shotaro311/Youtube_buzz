@@ -18,8 +18,8 @@ export async function DELETE(_request: Request, { params }: Params) {
     );
   }
 
-  const id = Number(params.id);
-  if (!Number.isInteger(id) || id <= 0) {
+  const id = Number.parseInt(params.id ?? '', 10);
+  if (!Number.isFinite(id) || id <= 0) {
     return NextResponse.json(
       { ok: false, message: '履歴IDが不正です' } satisfies DeleteResponseBody,
       { status: 400 }

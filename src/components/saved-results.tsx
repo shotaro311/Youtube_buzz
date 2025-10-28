@@ -51,13 +51,6 @@ export function SavedResultsList({ items, onView, onDelete }: SavedResultsListPr
                 </button>
                 <button
                   type="button"
-                  onClick={() => onView(item)}
-                  className="inline-flex flex-1 items-center justify-center rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-500"
-                >
-                  保存
-                </button>
-                <button
-                  type="button"
                   onClick={() => onDelete(item.id)}
                   className="inline-flex items-center justify-center rounded-md border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50"
                 >
