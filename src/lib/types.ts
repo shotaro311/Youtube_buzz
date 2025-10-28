@@ -89,3 +89,7 @@ export interface SaveHistoryRequest {
 export type HistoryResponseBody =
   | { ok: true; history: SearchHistory[] }
   | { ok: false; message: string };
+
+export type DeleteHistoryResponseBody =
+  | { ok: true }
+  | { ok: false; message: string };

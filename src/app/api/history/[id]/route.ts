@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server';
+import type { DeleteHistoryResponseBody } from '@/lib/types';
 
 interface Params {
   params: { id: string };
-}
-
-interface DeleteResponseBody {
-  ok: boolean;
-  message?: string;
 }
 
 export async function DELETE(_request: Request, { params }: Params) {
   const workerUrl = process.env.WORKER_URL;
   if (!workerUrl) {
     return NextResponse.json(
-      { ok: false, message: 'WORKER_URL が未設定です' } satisfies DeleteResponseBody,
+      { ok: false, message: 'WORKER_URL が未設定です' } satisfies DeleteHistoryResponseBody,
       { status: 500 }
     );
   }
@@ -21,7 +17,7 @@ export async function DELETE(_request: Request, { params }: Params) {
   const id = Number.parseInt(params.id ?? '', 10);
   if (!Number.isFinite(id) || id <= 0) {
     return NextResponse.json(
-      { ok: false, message: '履歴IDが不正です' } satisfies DeleteResponseBody,
+      { ok: false, message: '履歴IDが不正です' } satisfies DeleteHistoryResponseBody,
       { status: 400 }
     );
   }
@@ -31,13 +27,27 @@ export async function DELETE(_request: Request, { params }: Params) {
     headers: { 'Content-Type': 'application/json' },
   });
 
-  if (!response.ok) {
-    const text = await response.text();
+  const responseText = await response.text();
+
+  let data: DeleteHistoryResponseBody | null = null;
+  if (responseText) {
+    try {
+      data = JSON.parse(responseText) as DeleteHistoryResponseBody;
+    } catch (error) {
+      console.error('[api/history/[id]] Worker JSON parse error:', error);
+    }
+  }
+
+  if (!response.ok || !data || data.ok !== true) {
+    const message =
+      data && 'message' in data && data.message
+        ? data.message
+        : responseText || '履歴の削除に失敗しました';
     return NextResponse.json(
-      { ok: false, message: text || '履歴の削除に失敗しました' } satisfies DeleteResponseBody,
-      { status: response.status }
+      { ok: false, message } satisfies DeleteHistoryResponseBody,
+      { status: response.ok ? 500 : response.status }
     );
   }
 
-  return NextResponse.json({ ok: true } satisfies DeleteResponseBody);
+  return NextResponse.json({ ok: true } satisfies DeleteHistoryResponseBody);
 }

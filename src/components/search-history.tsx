@@ -1,7 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import type { SearchHistory, HistoryResponseBody, SearchRequest } from '@/lib/types';
+import { useCallback, useEffect, useState } from 'react';
+import type {
+  SearchHistory,
+  HistoryResponseBody,
+  SearchRequest,
+  DeleteHistoryResponseBody,
+} from '@/lib/types';
 import { formatDateTimeJst } from '@/lib/date';
 
 interface SearchHistoryProps {
@@ -12,14 +17,14 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
   const [history, setHistory] = useState<SearchHistory[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  useEffect(() => {
-    loadHistory();
-  }, []);
-
-  const loadHistory = async () => {
-    setLoading(true);
-    setError(null);
+  const loadHistory = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
       const response = await fetch('/api/history');
@@ -30,13 +35,26 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
       }
 
       setHistory(data.history);
+      if (!silent) {
+        setError(null);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : '履歴の取得に失敗しました';
-      setError(message);
+      if (silent) {
+        console.error('[SearchHistory] 履歴の再取得に失敗:', message);
+      } else {
+        setError(message);
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void loadHistory();
+  }, [loadHistory]);
 
   const handleReuse = (item: SearchHistory) => {
     const searchRequest: SearchRequest = {
@@ -49,24 +67,39 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
       publishedWithin: item.publishedWithin,
       videoDuration: item.videoDuration,
       includeShorts: item.includeShorts,
+      excludeKeywords: item.excludeKeywords,
     };
     onReuse(searchRequest);
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('この検索履歴を削除しますか？')) {
-      return;
+    const hasConfirm =
+      typeof window !== 'undefined' && typeof window.confirm === 'function';
+    if (hasConfirm) {
+      const ok = window.confirm('この検索履歴を削除しますか？');
+      if (!ok) {
+        return;
+      }
     }
+
+    setDeletingId(id);
     try {
       const response = await fetch(`/api/history/${id}`, { method: 'DELETE' });
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || '削除に失敗しました');
+      const data = await response.json().catch(() => null) as DeleteHistoryResponseBody | null;
+      if (!response.ok || !data || data.ok !== true) {
+        const message =
+          data && data.ok === false && data.message
+            ? data.message
+            : '削除に失敗しました';
+        throw new Error(message);
       }
       setHistory(prev => prev.filter(entry => entry.id !== id));
+      await loadHistory({ silent: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : '削除に失敗しました';
       alert(message);
+    } finally {
+      setDeletingId(current => (current === id ? null : current));
     }
   };
 
@@ -105,6 +138,7 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
         <h2 className="text-lg font-semibold text-zinc-900">検索履歴</h2>
         <button
           onClick={loadHistory}
+          type="button"
           className="text-sm text-sky-600 hover:text-sky-700"
         >
           更新
@@ -132,15 +166,18 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
                 <div className="flex shrink-0 gap-2">
                   <button
                     onClick={() => handleReuse(item)}
+                    type="button"
                     className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity hover:bg-sky-700 group-hover:opacity-100"
                   >
                     再検索
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="rounded-md border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-600 opacity-0 transition-opacity hover:bg-rose-50 group-hover:opacity-100"
+                    disabled={deletingId === item.id}
+                    type="button"
+                    className="rounded-md border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-600 opacity-0 transition-opacity hover:bg-rose-50 group-hover:opacity-100 disabled:cursor-wait disabled:opacity-60"
                   >
-                    削除
+                    {deletingId === item.id ? '削除中…' : '削除'}
                   </button>
                 </div>
               </div>

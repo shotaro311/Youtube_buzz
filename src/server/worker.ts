@@ -1,5 +1,5 @@
 import type { D1Database } from '@cloudflare/workers-types';
-import type { SaveHistoryRequest, SearchRequest, VideoResult } from '../lib/types';
+import type { SaveHistoryRequest, SearchRequest } from '../lib/types';
 
 export interface Env {
   DB: D1Database;
@@ -10,7 +10,7 @@ const worker = {
     const url = new URL(request.url);
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
       'Content-Type': 'application/json',
     };
@@ -155,7 +155,22 @@ async function handleDeleteHistory(
     });
   }
 
-  await env.DB.prepare('DELETE FROM search_history WHERE id = ?').bind(id).run();
+  await env.DB.prepare('DELETE FROM search_results WHERE history_id = ?')
+    .bind(id)
+    .run();
+
+  const result = await env.DB.prepare('DELETE FROM search_history WHERE id = ?')
+    .bind(id)
+    .run();
+
+  const deleted = result.meta.changes ?? 0;
+  if (deleted === 0) {
+    return new Response(JSON.stringify({ ok: false, message: 'not found' }), {
+      status: 404,
+      headers,
+    });
+  }
+
   return new Response(JSON.stringify({ ok: true }), { headers });
 }
 
