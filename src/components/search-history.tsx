@@ -53,6 +53,23 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
     onReuse(searchRequest);
   };
 
+  const handleDelete = async (id: number) => {
+    if (!confirm('この検索履歴を削除しますか？')) {
+      return;
+    }
+    try {
+      const response = await fetch(`/api/history/${id}`, { method: 'DELETE' });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || '削除に失敗しました');
+      }
+      setHistory(prev => prev.filter(entry => entry.id !== id));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '削除に失敗しました';
+      alert(message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-zinc-200 bg-white p-6">
@@ -100,29 +117,37 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
             key={item.id}
             className="group rounded-lg border border-zinc-200 bg-zinc-50 p-3 transition-colors hover:border-sky-300 hover:bg-sky-50"
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="mb-1 flex items-center gap-2">
-                  <span className="font-medium text-zinc-900">{item.keyword}</span>
-                  <span className="rounded bg-zinc-200 px-2 py-0.5 text-xs text-zinc-600">
-                    {item.region === 'jp' ? '日本' : 'グローバル'}
-                  </span>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="font-medium text-zinc-900">{item.keyword}</span>
+                    <span className="rounded bg-zinc-200 px-2 py-0.5 text-xs text-zinc-600">
+                      {item.region === 'jp' ? '日本' : 'グローバル'}
+                    </span>
+                  </div>
+                  <div className="text-xs text-zinc-500">
+                    {formatDateTimeJst(item.searchedAt)} · {item.resultCount}件 · {durationLabel(item.videoDuration)} · {item.excludeKeywords ? `除外: ${item.excludeKeywords}` : '除外なし'}
+                  </div>
                 </div>
-                <div className="text-xs text-zinc-500">
-                  {formatDateTimeJst(item.searchedAt)} · {item.resultCount}件 · {durationLabel(item.videoDuration)}
+                <div className="flex shrink-0 gap-2">
+                  <button
+                    onClick={() => handleReuse(item)}
+                    className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity hover:bg-sky-700 group-hover:opacity-100"
+                  >
+                    再検索
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="rounded-md border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-600 opacity-0 transition-opacity hover:bg-rose-50 group-hover:opacity-100"
+                  >
+                    削除
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={() => handleReuse(item)}
-                className="shrink-0 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity hover:bg-sky-700 group-hover:opacity-100"
-              >
-                再検索
-              </button>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
   );
 }
 

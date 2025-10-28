@@ -33,6 +33,20 @@ export function VideoCard({ video, keyword, isSaved, onSaved }: VideoCardProps) 
 
   return (
     <article className="flex flex-col gap-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+      {video.thumbnailUrl && (
+        <a
+          href={video.videoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block overflow-hidden rounded-2xl"
+        >
+          <img
+            src={video.thumbnailUrl}
+            alt={video.title}
+            className="h-48 w-full object-cover"
+          />
+        </a>
+      )}
       <header className="flex flex-col gap-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-sky-600">伸び率スコア {video.growthScore.toFixed(2)}</span>
         <a

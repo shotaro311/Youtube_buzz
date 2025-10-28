@@ -19,6 +19,7 @@ export function parseSearchRequest(input: unknown): SearchRequest {
   const maxSubscribersValue = data.maxSubscribers;
   const maxViewsValue = data.maxViews;
   const videoDurationValue = (data.videoDuration as VideoDuration | undefined) ?? 'any';
+  const excludeKeywordsValue = (data.excludeKeywords as string | undefined)?.trim() ?? '';
 
   if (!keyword) {
     throw new Error('検索キーワードは必須です');
@@ -61,6 +62,7 @@ export function parseSearchRequest(input: unknown): SearchRequest {
     minViews,
     publishedWithin,
     videoDuration: videoDurationValue,
+    excludeKeywords: excludeKeywordsValue,
     includeShorts,
     maxSubscribers,
     maxViews,
@@ -71,6 +73,7 @@ export function sanitizeVideoResult(result: VideoResult) {
   return {
     ...result,
     growthScore: Number(result.growthScore.toFixed(2)),
+    thumbnailUrl: result.thumbnailUrl,
   };
 }
 

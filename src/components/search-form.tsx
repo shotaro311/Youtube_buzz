@@ -10,6 +10,7 @@ export const defaultSearchFormState: SearchRequest = {
   minViews: 10000,
   publishedWithin: '30',
   videoDuration: 'any',
+  excludeKeywords: '',
   includeShorts: true,
   maxSubscribers: null,
   maxViews: null,
@@ -52,6 +53,21 @@ export function SearchForm({ value, onChange, onSubmit }: SearchFormProps) {
           onChange={event => update({ keyword: event.target.value })}
           className="rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base text-zinc-900 placeholder:text-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
         />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="font-medium text-zinc-800" htmlFor="excludeKeywords">
+          除外キーワード
+        </label>
+        <input
+          id="excludeKeywords"
+          name="excludeKeywords"
+          placeholder="例: リーク,ネタバレ"
+          value={value.excludeKeywords}
+          onChange={event => update({ excludeKeywords: event.target.value })}
+          className="rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base text-zinc-900 placeholder:text-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+        />
+        <p className="text-xs text-zinc-500">カンマ区切りで複数指定可能</p>
       </div>
 
       <div className="flex flex-col gap-2">

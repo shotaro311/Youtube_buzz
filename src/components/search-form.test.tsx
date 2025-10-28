@@ -24,6 +24,7 @@ describe('SearchForm', () => {
         keyword: 'キャンプ ギア',
         region: 'jp',
         videoDuration: 'any',
+        excludeKeywords: '',
         maxSubscribers: null,
         maxViews: null,
       }),

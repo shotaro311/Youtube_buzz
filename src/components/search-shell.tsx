@@ -47,6 +47,7 @@ export function SearchShell() {
           searchRequest: {
             ...item.searchRequest,
             videoDuration: item.searchRequest.videoDuration ?? 'any',
+            excludeKeywords: item.searchRequest.excludeKeywords ?? '',
           },
         }));
         setSavedResults(parsed);

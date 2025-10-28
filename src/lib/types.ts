@@ -10,6 +10,7 @@ export interface SearchRequest {
   minViews: number;
   publishedWithin: PublishedWithin;
   videoDuration: VideoDuration;
+  excludeKeywords: string;
   includeShorts: boolean;
   maxSubscribers: number | null;
   maxViews: number | null;
@@ -27,6 +28,7 @@ export interface VideoResult {
   publishedAt: string;
   channelPublishedAt: string;
   growthScore: number;
+  thumbnailUrl: string;
   isShort: boolean;
 }
 
@@ -69,6 +71,7 @@ export interface SearchHistory {
   maxViews: number | null;
   publishedWithin: PublishedWithin;
   videoDuration: VideoDuration;
+  excludeKeywords: string;
   includeShorts: boolean;
   resultCount: number;
   searchedAt: string;

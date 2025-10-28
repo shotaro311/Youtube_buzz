@@ -23,6 +23,13 @@ interface VideoItem {
     defaultAudioLanguage?: string;
     tags?: string[];
     description?: string;
+    thumbnails?: {
+      default?: { url?: string };
+      medium?: { url?: string };
+      high?: { url?: string };
+      standard?: { url?: string };
+      maxres?: { url?: string };
+    };
   };
   statistics?: {
     viewCount?: string;
@@ -111,15 +118,38 @@ async function fetchWithKey(request: SearchRequest, apiKey: string): Promise<Vid
   };
 
   const results: VideoResult[] = [];
+  const excludeTerms = request.excludeKeywords
+    .split(',')
+    .map(term => term.trim().toLowerCase())
+    .filter(Boolean);
 
   for (const video of videos) {
     const channel = channelMap.get(video.snippet.channelId);
     const views = parseCount(video.statistics?.viewCount);
     const subscribers = parseCount(channel?.statistics?.subscriberCount);
     const durationSeconds = parseDurationSeconds(video.contentDetails?.duration);
+    const thumbnailUrl =
+      video.snippet.thumbnails?.maxres?.url ??
+      video.snippet.thumbnails?.high?.url ??
+      video.snippet.thumbnails?.standard?.url ??
+      video.snippet.thumbnails?.medium?.url ??
+      video.snippet.thumbnails?.default?.url ??
+      '';
 
     if (views < request.minViews) continue;
     if (subscribers < request.minSubscribers) continue;
+
+    if (excludeTerms.length > 0) {
+      const titleLower = video.snippet.title.toLowerCase();
+      const descriptionLower = video.snippet.description?.toLowerCase() ?? '';
+      const channelTitleLower = channel?.snippet.title.toLowerCase() ?? '';
+      const hasExcluded = excludeTerms.some(term =>
+        titleLower.includes(term) || descriptionLower.includes(term) || channelTitleLower.includes(term)
+      );
+      if (hasExcluded) {
+        continue;
+      }
+    }
 
     const isShort = durationSeconds !== null && durationSeconds <= 60;
     if (!matchesDuration(durationSeconds, request.videoDuration)) {
@@ -163,6 +193,7 @@ async function fetchWithKey(request: SearchRequest, apiKey: string): Promise<Vid
       publishedAt: video.snippet.publishedAt,
       channelPublishedAt: channel?.snippet.publishedAt ?? '',
       growthScore,
+      thumbnailUrl,
       isShort,
     });
   }
@@ -195,6 +226,17 @@ async function fetchSearchItems(request: SearchRequest, apiKey: string): Promise
     if (publishedAfter) {
       params.set('publishedAfter', publishedAfter);
     }
+    let query = request.keyword;
+    const excludeTerms = request.excludeKeywords
+      .split(',')
+      .map(term => term.trim())
+      .filter(Boolean);
+    if (excludeTerms.length > 0) {
+      const minusPart = excludeTerms.map(term => `-${term}`).join(' ');
+      query = `${query} ${minusPart}`.trim();
+    }
+    params.set('q', query);
+
     if (request.videoDuration !== 'any') {
       params.set('videoDuration', request.videoDuration);
     }
