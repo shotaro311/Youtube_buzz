@@ -3,22 +3,9 @@
 import { useState } from 'react';
 import type { SearchRequest, VideoDuration } from '@/lib/types';
 
-export const defaultSearchFormState: SearchRequest = {
-  keyword: '',
-  region: 'jp',
-  minSubscribers: 100,
-  minViews: 10000,
-  publishedWithin: '30',
-  videoDuration: 'any',
-  excludeKeywords: '',
-  includeShorts: true,
-  maxSubscribers: null,
-  maxViews: null,
-};
-
 interface SearchFormProps {
   value: SearchRequest;
-  onChange: (next: SearchRequest) => void;
+  onChange: (patch: Partial<SearchRequest>) => void;
   onSubmit: (state: SearchRequest) => void;
 }
 
@@ -26,7 +13,7 @@ export function SearchForm({ value, onChange, onSubmit }: SearchFormProps) {
   const [showFilters, setShowFilters] = useState(false);
 
   const update = (partial: Partial<SearchRequest>) => {
-    onChange({ ...value, ...partial });
+    onChange(partial);
   };
 
   return (

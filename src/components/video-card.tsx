@@ -40,6 +40,7 @@ export function VideoCard({ video, keyword, isSaved, onSaved }: VideoCardProps) 
           rel="noopener noreferrer"
           className="block overflow-hidden rounded-2xl"
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={video.thumbnailUrl}
             alt={video.title}

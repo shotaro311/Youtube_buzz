@@ -1,17 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { formatDateTimeJst } from '@/lib/date';
 import type { SaveRequestBody, SearchRequest, VideoResult } from '@/lib/types';
+import {
+  SAVED_RESULTS_MAX_ITEMS,
+  type SavedResultSet,
+} from '@/lib/storage/saved-results';
 import { SaveButton } from './save-button';
-
-export interface SavedResultSet {
-  id: string;
-  keyword: string;
-  createdAt: string;
-  searchRequest: SearchRequest;
-  videos: VideoResult[];
-}
 
 interface SavedResultsListProps {
   items: SavedResultSet[];
@@ -24,7 +20,9 @@ export function SavedResultsList({ items, onView, onDelete }: SavedResultsListPr
     <div className="rounded-2xl border border-zinc-200 bg-white p-6">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-zinc-900">保存データ</h2>
-        <span className="text-xs text-zinc-400">{items.length}/10</span>
+        <span className="text-xs text-zinc-400">
+          {items.length}/{SAVED_RESULTS_MAX_ITEMS}
+        </span>
       </div>
       {items.length === 0 ? (
         <div className="text-sm text-zinc-500">まだ保存された検索結果はありません</div>
@@ -71,15 +69,11 @@ interface SavedResultsModalProps {
 }
 
 export function SavedResultsModal({ item, onClose }: SavedResultsModalProps) {
+  const [savedIds, setSavedIds] = useState<Set<string>>(() => new Set());
+
   if (!item) {
     return null;
   }
-
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    setSavedIds(new Set());
-  }, [item.id]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -124,6 +118,7 @@ export function SavedResultsModal({ item, onClose }: SavedResultsModalProps) {
                       rel="noopener noreferrer"
                       className="block overflow-hidden rounded-xl"
                     >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={video.thumbnailUrl}
                         alt={video.title}
