@@ -144,7 +144,9 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-zinc-900">検索履歴</h2>
         <button
-          onClick={loadHistory}
+          onClick={() => {
+            void loadHistory();
+          }}
           type="button"
           className="text-sm text-sky-600 hover:text-sky-700"
         >
