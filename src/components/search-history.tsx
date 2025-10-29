@@ -86,7 +86,14 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
     try {
       const response = await fetch(`/api/history/${id}`, { method: 'DELETE' });
       const data = await response.json().catch(() => null) as DeleteHistoryResponseBody | null;
-      if (!response.ok || !data || data.ok !== true) {
+      const isAlreadyRemoved =
+        response.status === 404 &&
+        data &&
+        data.ok === false &&
+        typeof data.message === 'string' &&
+        data.message.toLowerCase().includes('not found');
+      const isSuccess = (response.ok && data?.ok === true) || isAlreadyRemoved;
+      if (!isSuccess) {
         const message =
           data && data.ok === false && data.message
             ? data.message

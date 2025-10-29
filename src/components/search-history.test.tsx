@@ -71,6 +71,38 @@ describe('SearchHistoryComponent', () => {
     expect(alertSpy).not.toHaveBeenCalled();
   });
 
+  it('存在しない履歴でも成功として扱う', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(
+        jsonResponse({ ok: true, history: [createHistoryItem()] })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({ ok: false, message: 'Not found' }, { status: 404 })
+      )
+      .mockResolvedValueOnce(jsonResponse({ ok: true, history: [] }));
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation(fetchMock as unknown as typeof fetch);
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+
+    render(<SearchHistoryComponent onReuse={() => undefined} />);
+
+    await screen.findByText('テストキーワード');
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: '削除' }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('テストキーワード')).not.toBeInTheDocument();
+    });
+
+    expect(alertSpy).not.toHaveBeenCalled();
+  });
+
   it('削除に失敗した場合にアラートを表示する', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(

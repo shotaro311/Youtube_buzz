@@ -165,10 +165,7 @@ async function handleDeleteHistory(
 
   const deleted = result.meta.changes ?? 0;
   if (deleted === 0) {
-    return new Response(JSON.stringify({ ok: false, message: 'not found' }), {
-      status: 404,
-      headers,
-    });
+    return new Response(JSON.stringify({ ok: true }), { headers });
   }
 
   return new Response(JSON.stringify({ ok: true }), { headers });
