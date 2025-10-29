@@ -100,7 +100,7 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
             : '削除に失敗しました';
         throw new Error(message);
       }
-      setHistory(prev => prev.filter(entry => entry.id !== id));
+      setHistory(prev => prev.filter(entry => Number(entry.id) !== Number(id)));
       await loadHistory({ silent: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : '削除に失敗しました';
