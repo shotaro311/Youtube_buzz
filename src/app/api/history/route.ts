@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { HistoryResponseBody } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const workerUrl = process.env.WORKER_URL;
@@ -14,6 +17,7 @@ export async function GET() {
     const response = await fetch(`${workerUrl}/api/history`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -21,7 +25,9 @@ export async function GET() {
     }
 
     const data = await response.json() as HistoryResponseBody;
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: { 'Cache-Control': 'no-store' },
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : '履歴の取得に失敗しました';
     return NextResponse.json(

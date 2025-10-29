@@ -27,7 +27,7 @@ export function SearchHistoryComponent({ onReuse }: SearchHistoryProps) {
     }
 
     try {
-      const response = await fetch('/api/history');
+      const response = await fetch('/api/history', { cache: 'no-store' });
       const data = await response.json() as HistoryResponseBody;
 
       if (!data.ok) {

@@ -29,7 +29,7 @@ const worker = {
         return await handleDeleteHistory(id, env, corsHeaders);
       }
 
-      if (url.pathname === '/api/history' && request.method === 'GET') {
+    if (url.pathname === '/api/history' && request.method === 'GET') {
         return await handleGetHistory(env, corsHeaders);
       }
 
@@ -140,7 +140,12 @@ async function handleGetHistory(
     excludeKeywords: row.excludeKeywords ?? '',
   }));
 
-  return new Response(JSON.stringify({ ok: true, history }), { headers });
+  return new Response(JSON.stringify({ ok: true, history }), {
+    headers: {
+      ...headers,
+      'Cache-Control': 'no-store',
+    },
+  });
 }
 
 async function handleDeleteHistory(
