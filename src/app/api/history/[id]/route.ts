@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import type { DeleteHistoryResponseBody } from '@/lib/types';
 
-interface Params {
-  params: { id: string };
-}
+type RouteContext = {
+  params: Promise<{ id: string }> | { id: string };
+};
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: NextRequest, context: RouteContext) {
   const workerUrl = process.env.WORKER_URL;
   if (!workerUrl) {
     return NextResponse.json(
@@ -14,7 +14,8 @@ export async function DELETE(_request: Request, { params }: Params) {
     );
   }
 
-  const id = Number.parseInt(params.id ?? '', 10);
+  const params = await Promise.resolve(context.params);
+  const id = Number.parseInt(params?.id ?? '', 10);
   if (!Number.isFinite(id) || id <= 0) {
     return NextResponse.json(
       { ok: false, message: '履歴IDが不正です' } satisfies DeleteHistoryResponseBody,
