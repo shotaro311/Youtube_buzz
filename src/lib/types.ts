@@ -2,6 +2,7 @@ export type Region = 'jp' | 'global';
 
 export type PublishedWithin = 'any' | '7' | '30' | '90' | '180';
 export type VideoDuration = 'any' | 'short' | 'medium' | 'long';
+export type ExcludableDuration = 'short' | 'medium' | 'long';
 
 export interface SearchRequest {
   keyword: string;
@@ -9,9 +10,8 @@ export interface SearchRequest {
   minSubscribers: number;
   minViews: number;
   publishedWithin: PublishedWithin;
-  videoDuration: VideoDuration;
   excludeKeywords: string;
-  includeShorts: boolean;
+  excludeDurations: ExcludableDuration[];
   maxSubscribers: number | null;
   maxViews: number | null;
 }

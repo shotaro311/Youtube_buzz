@@ -6,9 +6,8 @@ export const defaultSearchRequest: SearchRequest = {
   minSubscribers: 100,
   minViews: 10_000,
   publishedWithin: '30',
-  videoDuration: 'any',
   excludeKeywords: '',
-  includeShorts: true,
+  excludeDurations: [],
   maxSubscribers: null,
   maxViews: null,
 };
@@ -26,12 +25,10 @@ export function normalizeSearchRequest(
     minViews: merged.minViews ?? defaultSearchRequest.minViews,
     publishedWithin:
       merged.publishedWithin ?? defaultSearchRequest.publishedWithin,
-    videoDuration:
-      merged.videoDuration ?? defaultSearchRequest.videoDuration,
     excludeKeywords:
       merged.excludeKeywords ?? defaultSearchRequest.excludeKeywords,
-    includeShorts:
-      merged.includeShorts ?? defaultSearchRequest.includeShorts,
+    excludeDurations:
+      merged.excludeDurations ?? defaultSearchRequest.excludeDurations,
     maxSubscribers:
       merged.maxSubscribers === undefined ? null : merged.maxSubscribers,
     maxViews: merged.maxViews === undefined ? null : merged.maxViews,

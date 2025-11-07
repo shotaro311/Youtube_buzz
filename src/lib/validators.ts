@@ -1,8 +1,8 @@
-import type { PublishedWithin, Region, SearchRequest, VideoDuration, VideoResult } from './types';
+import type { PublishedWithin, Region, SearchRequest, ExcludableDuration, VideoResult } from './types';
 
 const REGION_VALUES: Region[] = ['jp', 'global'];
 const PUBLISHED_WITHIN_VALUES: PublishedWithin[] = ['any', '7', '30', '90', '180'];
-const VIDEO_DURATION_VALUES: VideoDuration[] = ['any', 'short', 'medium', 'long'];
+const EXCLUDABLE_DURATION_VALUES: ExcludableDuration[] = ['short', 'medium', 'long'];
 
 export function parseSearchRequest(input: unknown): SearchRequest {
   if (!input || typeof input !== 'object') {
@@ -15,11 +15,10 @@ export function parseSearchRequest(input: unknown): SearchRequest {
   const minSubscribers = Number(data.minSubscribers ?? 0);
   const minViews = Number(data.minViews ?? 0);
   const publishedWithin = data.publishedWithin as PublishedWithin | undefined;
-  const includeShortsValue = data.includeShorts ?? true;
   const maxSubscribersValue = data.maxSubscribers;
   const maxViewsValue = data.maxViews;
-  const videoDurationValue = (data.videoDuration as VideoDuration | undefined) ?? 'any';
   const excludeKeywordsValue = (data.excludeKeywords as string | undefined)?.trim() ?? '';
+  const excludeDurationsValue = data.excludeDurations as unknown;
 
   if (!keyword) {
     throw new Error('検索キーワードは必須です');
@@ -30,9 +29,6 @@ export function parseSearchRequest(input: unknown): SearchRequest {
   if (!publishedWithin || !PUBLISHED_WITHIN_VALUES.includes(publishedWithin)) {
     throw new Error('publishedWithin の値が不正です');
   }
-  if (!VIDEO_DURATION_VALUES.includes(videoDurationValue)) {
-    throw new Error('videoDuration の値が不正です');
-  }
   if (!Number.isFinite(minSubscribers) || minSubscribers < 0) {
     throw new Error('minSubscribers の値が不正です');
   }
@@ -40,10 +36,15 @@ export function parseSearchRequest(input: unknown): SearchRequest {
     throw new Error('minViews の値が不正です');
   }
 
-  const includeShorts =
-    typeof includeShortsValue === 'boolean'
-      ? includeShortsValue
-      : String(includeShortsValue).toLowerCase() !== 'false';
+  // Parse and validate excludeDurations
+  const excludeDurations: ExcludableDuration[] = [];
+  if (Array.isArray(excludeDurationsValue)) {
+    for (const duration of excludeDurationsValue) {
+      if (typeof duration === 'string' && EXCLUDABLE_DURATION_VALUES.includes(duration as ExcludableDuration)) {
+        excludeDurations.push(duration as ExcludableDuration);
+      }
+    }
+  }
 
   const maxSubscribers = parseOptionalNumber(maxSubscribersValue);
   const maxViews = parseOptionalNumber(maxViewsValue);
@@ -61,9 +62,8 @@ export function parseSearchRequest(input: unknown): SearchRequest {
     minSubscribers,
     minViews,
     publishedWithin,
-    videoDuration: videoDurationValue,
     excludeKeywords: excludeKeywordsValue,
-    includeShorts,
+    excludeDurations,
     maxSubscribers,
     maxViews,
   };

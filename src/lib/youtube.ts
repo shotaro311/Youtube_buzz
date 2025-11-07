@@ -1,4 +1,4 @@
-import type { Region, SearchRequest, VideoDuration, VideoResult } from './types';
+import type { Region, SearchRequest, ExcludableDuration, VideoResult } from './types';
 import { getPublishedAfterFilter } from './date';
 
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
@@ -152,18 +152,20 @@ async function fetchWithKey(request: SearchRequest, apiKey: string): Promise<Vid
     }
 
     const isShort = durationSeconds !== null && durationSeconds <= 60;
-    if (!matchesDuration(durationSeconds, request.videoDuration)) {
+
+    // Always exclude YouTube Shorts (60 seconds or less, or with #shorts tag)
+    const tags = video.snippet.tags?.map(tag => tag.toLowerCase()) ?? [];
+    const titleLower = video.snippet.title.toLowerCase();
+    const descriptionLower = video.snippet.description?.toLowerCase() ?? '';
+    const hasShortsTag = tags.some(tag => tag === '#shorts' || tag === 'shorts');
+    const hasShortsText = titleLower.includes('#shorts') || descriptionLower.includes('#shorts');
+    if (isShort || hasShortsTag || hasShortsText) {
       continue;
     }
-    if (!request.includeShorts) {
-      const tags = video.snippet.tags?.map(tag => tag.toLowerCase()) ?? [];
-      const titleLower = video.snippet.title.toLowerCase();
-      const descriptionLower = video.snippet.description?.toLowerCase() ?? '';
-      const hasShortsTag = tags.some(tag => tag === '#shorts' || tag === 'shorts');
-      const hasShortsText = titleLower.includes('#shorts') || descriptionLower.includes('#shorts');
-      if (isShort || hasShortsTag || hasShortsText) {
-        continue;
-      }
+
+    // Filter by excluded durations
+    if (shouldExcludeDuration(durationSeconds, request.excludeDurations)) {
+      continue;
     }
 
     if (request.maxSubscribers !== null && subscribers > request.maxSubscribers) continue;
@@ -236,10 +238,6 @@ async function fetchSearchItems(request: SearchRequest, apiKey: string): Promise
       query = `${query} ${minusPart}`.trim();
     }
     params.set('q', query);
-
-    if (request.videoDuration !== 'any') {
-      params.set('videoDuration', request.videoDuration);
-    }
 
     let response: SearchApiResponse;
     try {
@@ -317,16 +315,27 @@ function parseDurationSeconds(duration?: string): number | null {
   return Number.isFinite(total) ? total : null;
 }
 
-function matchesDuration(durationSeconds: number | null, filter: VideoDuration): boolean {
-  if (filter === 'any') return true;
-  if (durationSeconds === null) return false;
-  if (filter === 'short') {
-    return durationSeconds < 4 * 60;
+function shouldExcludeDuration(
+  durationSeconds: number | null,
+  excludeDurations: ExcludableDuration[]
+): boolean {
+  if (excludeDurations.length === 0 || durationSeconds === null) {
+    return false;
   }
-  if (filter === 'medium') {
-    return durationSeconds >= 4 * 60 && durationSeconds <= 20 * 60;
+
+  for (const duration of excludeDurations) {
+    if (duration === 'short' && durationSeconds < 4 * 60) {
+      return true;
+    }
+    if (duration === 'medium' && durationSeconds >= 4 * 60 && durationSeconds <= 20 * 60) {
+      return true;
+    }
+    if (duration === 'long' && durationSeconds > 20 * 60) {
+      return true;
+    }
   }
-  return durationSeconds > 20 * 60;
+
+  return false;
 }
 
 async function fetchChannelsByIds(channelIds: string[], apiKey: string): Promise<ChannelItem[]> {

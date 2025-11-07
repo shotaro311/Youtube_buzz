@@ -11,11 +11,8 @@ export async function POST(request: Request) {
 
     const videos = await fetchVideos(searchRequest);
     const sanitized = videos.map(sanitizeVideoResult);
-    const filteredVideos = searchRequest.includeShorts
-      ? sanitized
-      : sanitized.filter(video => !video.isShort);
 
-    return NextResponse.json({ ok: true, videos: filteredVideos } satisfies SearchResponseBody);
+    return NextResponse.json({ ok: true, videos: sanitized } satisfies SearchResponseBody);
   } catch (error) {
     const message = error instanceof Error ? error.message : '検索に失敗しました';
     const payload: SearchErrorBody = { ok: false, message };
