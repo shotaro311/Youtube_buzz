@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { formatDateTimeJst } from '@/lib/date';
-import type { SaveRequestBody, SearchRequest, VideoResult } from '@/lib/types';
+import type { SaveRequestBody, SearchRequest, VideoResult, ExcludableDuration } from '@/lib/types';
 import {
   SAVED_RESULTS_MAX_ITEMS,
   type SavedResultSet,
@@ -102,9 +102,8 @@ export function SavedResultsModal({ item, onClose }: SavedResultsModalProps) {
               <li>最大登録者数: {item.searchRequest.maxSubscribers ?? '指定なし'}</li>
               <li>最大再生数: {item.searchRequest.maxViews ?? '指定なし'}</li>
               <li>公開からの日数: {formatPublishedWithin(item.searchRequest.publishedWithin)}</li>
-              <li>動画の長さ: {formatVideoDuration(item.searchRequest.videoDuration)}</li>
               <li>除外キーワード: {item.searchRequest.excludeKeywords || 'なし'}</li>
-              <li>ショート動画を含める: {item.searchRequest.includeShorts ? 'はい' : 'いいえ'}</li>
+              <li>除外する動画の長さ: {formatExcludeDurations(item.searchRequest.excludeDurations)}</li>
             </ul>
           </div>
           <div className="space-y-3">
@@ -175,17 +174,21 @@ function formatPublishedWithin(value: SearchRequest['publishedWithin']): string 
   }
 }
 
-function formatVideoDuration(value: SearchRequest['videoDuration']): string {
-  switch (value) {
-    case 'short':
-      return 'ショート (4分未満)';
-    case 'medium':
-      return 'ミドル (4〜20分)';
-    case 'long':
-      return 'ロング (20分以上)';
-    default:
-      return '指定なし';
+function formatExcludeDurations(durations: ExcludableDuration[]): string {
+  if (durations.length === 0) {
+    return 'なし';
   }
+  const labels = durations.map(d => {
+    switch (d) {
+      case 'short':
+        return 'ショート (4分未満)';
+      case 'medium':
+        return 'ミドル (4〜20分)';
+      case 'long':
+        return 'ロング (20分以上)';
+    }
+  });
+  return labels.join(', ');
 }
 
 function buildSavePayload(video: VideoResult, keyword: string): SaveRequestBody {

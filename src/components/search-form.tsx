@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { SearchRequest, VideoDuration } from '@/lib/types';
+import type { SearchRequest, ExcludableDuration } from '@/lib/types';
 
 interface SearchFormProps {
   value: SearchRequest;
@@ -170,35 +170,53 @@ export function SearchForm({ value, onChange, onSubmit }: SearchFormProps) {
               <option value="180">直近180日</option>
             </select>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-zinc-700" htmlFor="videoDuration">
-              動画の長さ
-            </label>
-            <select
-              id="videoDuration"
-              value={value.videoDuration}
-              onChange={event =>
-                update({ videoDuration: event.target.value as VideoDuration })
-              }
-              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
-            >
-              <option value="any">指定なし</option>
-              <option value="short">ショート (4分未満)</option>
-              <option value="medium">ミドル (4〜20分)</option>
-              <option value="long">ロング (20分以上)</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-3 sm:col-span-3">
-            <input
-              id="includeShorts"
-              type="checkbox"
-              checked={value.includeShorts}
-              onChange={event => update({ includeShorts: event.target.checked })}
-              className="h-4 w-4 rounded border border-sky-200 text-sky-600 focus:ring-sky-500"
-            />
-            <label className="text-sm text-zinc-700" htmlFor="includeShorts">
-              ショート動画を含める
-            </label>
+          <div className="flex flex-col gap-2 sm:col-span-3">
+            <label className="text-sm font-medium text-zinc-700">除外する動画の長さ</label>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={value.excludeDurations.includes('short')}
+                  onChange={event => {
+                    const newExcludeDurations = event.target.checked
+                      ? [...value.excludeDurations, 'short' as ExcludableDuration]
+                      : value.excludeDurations.filter(d => d !== 'short');
+                    update({ excludeDurations: newExcludeDurations });
+                  }}
+                  className="h-4 w-4 rounded border border-sky-200 text-sky-600 focus:ring-sky-500"
+                />
+                <span className="text-sm text-zinc-700">ショート (4分未満)</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={value.excludeDurations.includes('medium')}
+                  onChange={event => {
+                    const newExcludeDurations = event.target.checked
+                      ? [...value.excludeDurations, 'medium' as ExcludableDuration]
+                      : value.excludeDurations.filter(d => d !== 'medium');
+                    update({ excludeDurations: newExcludeDurations });
+                  }}
+                  className="h-4 w-4 rounded border border-sky-200 text-sky-600 focus:ring-sky-500"
+                />
+                <span className="text-sm text-zinc-700">ミドル (4〜20分)</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={value.excludeDurations.includes('long')}
+                  onChange={event => {
+                    const newExcludeDurations = event.target.checked
+                      ? [...value.excludeDurations, 'long' as ExcludableDuration]
+                      : value.excludeDurations.filter(d => d !== 'long');
+                    update({ excludeDurations: newExcludeDurations });
+                  }}
+                  className="h-4 w-4 rounded border border-sky-200 text-sky-600 focus:ring-sky-500"
+                />
+                <span className="text-sm text-zinc-700">ロング (20分以上)</span>
+              </label>
+            </div>
+            <p className="text-xs text-zinc-500">※ショート動画（60秒以下）は常に除外されます</p>
           </div>
         </div>
       )}

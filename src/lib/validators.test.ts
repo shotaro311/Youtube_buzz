@@ -52,6 +52,7 @@ describe('sanitizeVideoResult', () => {
       channelPublishedAt: new Date().toISOString(),
       growthScore: 1.23456,
       isShort: false,
+      thumbnailUrl: 'https://example.com/thumbnail.jpg',
     });
 
     expect(result.growthScore).toBe(1.23);
