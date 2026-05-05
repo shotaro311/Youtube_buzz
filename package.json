@@ -18,9 +18,9 @@
     "save:dry-run": "node scripts/save-dry-run.mjs"
   },
   "dependencies": {
-    "next": "16.0.0",
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "next": "16.0.10",
+    "react": "19.2.1",
+    "react-dom": "19.2.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251014.0",
@@ -35,7 +35,7 @@
     "@vitejs/plugin-react-swc": "^4.2.0",
     "@vitest/coverage-v8": "^4.0.3",
     "eslint": "^9",
-    "eslint-config-next": "16.0.0",
+    "eslint-config-next": "16.0.10",
     "globals": "^16.4.0",
     "jsdom": "^27.0.1",
     "miniflare": "^4.20251011.1",
